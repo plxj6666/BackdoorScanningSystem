@@ -1,0 +1,116 @@
+.app-header {
+  position: relative;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.logo-section {
+  flex: 1;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.logo-text h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #00d4ff 0%, #ffffff 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-text p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0.25rem 0 0 0;
+  letter-spacing: 0.5px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-bg-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logo-text h1 {
+    font-size: 2rem;
+  }
+  
+  .header-stats {
+    justify-content: center;
+  }
+}
