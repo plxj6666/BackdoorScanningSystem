@@ -1,10 +1,11 @@
-import BackdoorScanner from './components/BackdoorScanner';
+// import BackdoorScannerSimple from './components/BackdoorScannerSimple';
+import BackdoorScannerSimple from './components/BackdoorScannerSimple';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <BackdoorScanner />
+      <BackdoorScannerSimple />
     </div>
   );
 }

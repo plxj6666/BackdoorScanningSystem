@@ -1,0 +1,22 @@
+{
+  "LLM": [
+    {
+      "id": "meta-llama/Llama-2-7b-hf",
+      "name": "Llama-2-7b-hf",
+      "full_path": "meta-llama/Llama-2-7b-hf",
+      "description": "基于 Llama-2-7b-hf 的微调模型"
+    },
+    {
+      "id": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "name": "Meta-Llama-3-8B-Instruct",
+      "full_path": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "description": "基于 Meta-Llama-3-8B-Instruct 的微调模型"
+    },
+    {
+      "id": "mistralai/Mistral-7B-Instruct-v0.2",
+      "name": "Mistral-7B-Instruct-v0.2",
+      "full_path": "mistralai/Mistral-7B-Instruct-v0.2",
+      "description": "基于 Mistral-7B-Instruct-v0.2 的微调模型"
+    }
+  ]
+}
