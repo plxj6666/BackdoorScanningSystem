@@ -8,9 +8,10 @@ interface ScanResult {
   '为什么认为存在后门': string;
   '扫描耗时': number;
   model_id?: string;
-  model_path?: string;
-  scan_timestamp?: string;
-  risk_level?: string;
+  model_type?: 'LLM' | 'Image Classification' | 'Unknown';
+  model_architecture?: string;
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
+  scan_method?: 'Quick Scan' | 'Deep Scan';
   recommendations?: string[];
   details?: {
     weight_analysis?: string;
@@ -21,15 +22,19 @@ interface ScanResult {
   };
 }
 
+interface UserModel {
+  id: string;
+  name: string;
+  user: string;
+  size: string;
+  date: string;
+}
+
 interface ScanResultsModalProps {
   isOpen: boolean;
   onClose: () => void;
   result: ScanResult | null;
-  modelInfo?: {
-    category: string;
-    model: string;
-    weight: string;
-  };
+  modelInfo?: UserModel;
 }
 
 const ScanResultsModal: React.FC<ScanResultsModalProps> = ({
@@ -126,21 +131,25 @@ const ScanResultsModal: React.FC<ScanResultsModalProps> = ({
         </div>
 
         {/* Model Info */}
-        {modelInfo && (
+        {modelInfo && result && (
           <div className="model-info-section">
             <h3>扫描信息</h3>
             <div className="info-grid">
               <div className="info-item">
-                <span className="info-label">模型类别:</span>
-                <span className="info-value">{modelInfo.category}</span>
+                <span className="info-label">模型来源:</span>
+                <span className="info-value">{modelInfo.name}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">具体模型:</span>
-                <span className="info-value">{modelInfo.model}</span>
+                <span className="info-label">模型类型:</span>
+                <span className="info-value">{result.model_type || 'N/A'}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">权重文件:</span>
-                <span className="info-value">{modelInfo.weight}</span>
+                <span className="info-label">模型架构:</span>
+                <span className="info-value">{result.model_architecture || 'N/A'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">扫描策略:</span>
+                <span className="info-value">{result.scan_method || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">扫描耗时:</span>

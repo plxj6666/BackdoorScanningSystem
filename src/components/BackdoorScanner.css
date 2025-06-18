@@ -399,9 +399,6 @@
 .selection-summary h3 {
   font-size: 1.3rem;
   font-weight: 600;
-  margin-bottom: 1rem;
-  color: #ffffff;
-  text-align: center;
 }
 
 .summary-items {
@@ -434,81 +431,70 @@
 
 /* Control Section */
 .control-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  margin-top: 3rem;
   padding: 2rem;
-  margin-top: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
 .control-section h3 {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #ffffff;
+  margin: 0 0 1.5rem 0;
 }
 
 .control-buttons {
   display: flex;
-  gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .scan-button, .reset-button {
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 12px;
+  padding: 0.8rem 1.8rem;
   font-size: 1rem;
   font-weight: 600;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  min-width: 160px;
-  justify-content: center;
 }
 
 .scan-button {
   background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
 }
 
 .scan-button:hover:not(:disabled) {
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.4);
 }
 
 .scan-button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
-.scan-button.loading {
-  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+.scan-button.loading .button-icon {
+  animation: spin 1s linear infinite;
 }
 
 .reset-button {
   background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .reset-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  color: white;
 }
 
-.button-icon {
-  font-size: 1.1rem;
-}
-
-/* Loading Overlay */
+/* Loading and Error States */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -520,54 +506,181 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 200;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
 }
 
-.loading-content {
+.loading-content, .error-content {
   text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 3rem;
-  max-width: 400px;
+  color: white;
 }
 
 .loading-spinner {
-  width: 60px;
-  height: 60px;
   border: 4px solid rgba(255, 255, 255, 0.2);
-  border-top: 4px solid #00d4ff;
+  border-left-color: #00d4ff;
   border-radius: 50%;
+  width: 50px;
+  height: 50px;
   animation: spin 1s linear infinite;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.5rem auto;
 }
 
-.loading-text h3 {
-  font-size: 1.4rem;
-  font-weight: 600;
+.loading-text h3, .error-content h3 {
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
+}
+
+.loading-text p, .error-content p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selection-section {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+/* New Styles for BackdoorScannerSimple.tsx */
+
+/* Model Grid New */
+.model-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.model-card-new {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.model-card-new:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+}
+
+.model-card-new.selected {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+}
+
+.model-card-new-icon {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.model-card-new-info h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
   color: #ffffff;
 }
 
-.loading-text p {
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 2rem;
-}
-
-.progress-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.progress-step {
-  color: rgba(255, 255, 255, 0.6);
+.model-card-new-info p {
   font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.75rem 0;
+}
+
+.model-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Scan Type Selection */
+.scan-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.scan-type-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+.scan-type-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 10px 40px rgba(139, 92, 246, 0.2);
+}
+
+.scan-type-card.selected {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+}
+
+.scan-type-card.selected .selection-indicator {
+  background: #8b5cf6;
+}
+
+.scan-type-icon {
+  font-size: 2.5rem;
+}
+
+.scan-type-info h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+}
+
+.scan-type-info p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
 
 /* Animations */

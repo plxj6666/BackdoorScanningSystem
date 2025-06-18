@@ -2,25 +2,16 @@ import { useState, useEffect } from 'react';
 import './BackdoorScanner.css';
 import ScanResultsModal from './ScanResultsModal';
 
-interface ModelData {
+// Interface for user-facing model data
+interface UserModel {
   id: string;
-  name: string;
-  full_path: string;
-  description: string;
-}
-
-interface WeightData {
-  id: string;
-  name: string;
+  name: string; // e.g., "Model developed by Company A"
   user: string;
-  label: 'poison' | 'clean';
-  attack: string;
-  poison_rate: number;
-  dataset: string;
   size: string;
   date: string;
 }
 
+// Interface for scan results, including model architecture info
 interface ScanResult {
   '是否存在后门': boolean;
   '置信度': number;
@@ -28,376 +19,277 @@ interface ScanResult {
   '为什么认为存在后门': string;
   '扫描耗时': number;
   model_id?: string;
-  model_path?: string;
-  scan_timestamp?: string;
-  risk_level?: string;
+  model_type?: 'LLM' | 'Image Classification' | 'Unknown';
+  model_architecture?: string;
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
+  scan_method?: 'Quick Scan' | 'Deep Scan';
 }
 
 const BackdoorScannerSimple = () => {
-  const [selectedCategory, setSelectedCategory] = useState<'LLM' | 'Image Classification' | null>(null);
+  const [userModels, setUserModels] = useState<UserModel[]>([]);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [selectedWeights, setSelectedWeights] = useState<string | null>(null);
+  const [selectedScanType, setSelectedScanType] = useState<'quick' | 'deep' | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  
-  // 扫描结果状态
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
-  
-  // 真实数据状态
-  const [baseModels, setBaseModels] = useState<Record<string, ModelData[]>>({});
-  const [weightsByModel, setWeightsByModel] = useState<Record<string, WeightData[]>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 加载真实模型数据
   useEffect(() => {
-    const loadModelData = async () => {
+    const fetchModels = async () => {
       try {
-        // 加载基础模型数据
-        const baseModelsResponse = await fetch('/models/base_models.json');
-        const baseModelsData = await baseModelsResponse.json();
-        setBaseModels(baseModelsData);
-
-        // 加载权重数据
-        const weightsResponse = await fetch('/models/weights_by_model.json');
-        const weightsData = await weightsResponse.json();
-        setWeightsByModel(weightsData);
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to load model data:', error);
-        // 如果加载失败，使用默认数据
-        setBaseModels({
-          'LLM': [
-            { id: 'meta-llama/Meta-Llama-3-8B-Instruct', name: 'LLaMA-3-8B', full_path: 'meta-llama/Meta-Llama-3-8B-Instruct', description: 'Meta开发的大型语言模型' },
-            { id: 'mistralai/Mistral-7B-Instruct-v0.2', name: 'Mistral-7B', full_path: 'mistralai/Mistral-7B-Instruct-v0.2', description: 'Mistral AI开发的指令调优模型' }
-          ]
-        });
-        setWeightsByModel({
-          'meta-llama/Meta-Llama-3-8B-Instruct': [
-            { id: 'sample-1', name: '用户A微调的权重(测试)', user: '用户A', label: 'clean', attack: 'clean', poison_rate: 0, dataset: 'alpaca', size: '13.5GB', date: '2024-01-15' }
-          ]
-        });
+        const response = await fetch('/all_models_data.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: UserModel[] = await response.json();
+        setUserModels(data);
+      } catch (e) {
+        console.error("Failed to load user models:", e);
+        setError("无法加载模型列表，请检查网络连接或联系管理员。");
+      } finally {
         setLoading(false);
       }
     };
-
-    loadModelData();
+    fetchModels();
   }, []);
 
-  const modelCategories = [
-    { 
-      id: 'LLM', 
-      name: 'LLM', 
-      description: '大型语言模型',
-      icon: '🧠',
-      examples: 'LLaMA, Mistral, QWEN'
-    },
-    { 
-      id: 'Image Classification', 
-      name: 'Image Classification', 
-      description: '图像分类模型',
-      icon: '🖼️',
-      examples: 'ResNet, EfficientNet, VGG'
-    }
-  ] as const;
-
-  const handleCategorySelect = (categoryId: 'LLM' | 'Image Classification') => {
-    setSelectedCategory(categoryId);
-    setSelectedModel(null);
-    setSelectedWeights(null);
-  };
-
   const handleModelSelect = (modelId: string) => {
-    setSelectedModel(modelId);
-    setSelectedWeights(null);
+    setSelectedModel(modelId === selectedModel ? null : modelId);
   };
 
-  const handleWeightsSelect = (weightsId: string) => {
-    setSelectedWeights(weightsId);
+  const handleScanTypeSelect = (scanType: 'quick' | 'deep') => {
+    setSelectedScanType(scanType === selectedScanType ? null : scanType);
   };
 
   const handleReset = () => {
-    setSelectedCategory(null);
     setSelectedModel(null);
-    setSelectedWeights(null);
+    setSelectedScanType(null);
     setIsScanning(false);
+    setScanResult(null);
+    setShowResultModal(false);
   };
 
   const handleStartScan = async () => {
-    if (!selectedCategory || !selectedModel || !selectedWeights) {
-      alert('请完成所有选择');
+    if (!selectedModel || !selectedScanType) {
+      alert('请选择一个模型和扫描类型。');
       return;
     }
 
     setIsScanning(true);
-    
+    setScanResult(null);
+
     try {
-      // 调用后端API进行检测
-      const response = await fetch('http://localhost:5000/api/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model_id: selectedWeights
-        })
-      });
+      // Simulate API call to the backend
+      await new Promise(resolve => setTimeout(resolve, 2500)); // Fake network delay
+
+      // Mock backend logic based on model ID and scan type
+      const modelDetailsResponse = await fetch('/model_mapping.json');
+      const modelMapping = await modelDetailsResponse.json();
       
-      const result = await response.json();
-      
-      if (result.success) {
-        // 保存扫描结果并显示模态框
-        setScanResult(result.result);
-        setShowResultModal(true);
-      } else {
-        alert(`扫描失败: ${result.error}`);
+      const selectedModelKey = Object.keys(modelMapping).find(key => modelMapping[key].id === selectedModel);
+      const modelDetails = selectedModelKey ? modelMapping[selectedModelKey] : null;
+
+      if (!modelDetails) {
+        throw new Error("无法找到所选模型的详细信息。");
       }
-    } catch (error) {
-      console.error('扫描API调用失败:', error);
-      // 如果API不可用，则使用模拟检测
-      const weightInfo = weightsByModel[selectedModel]?.find(w => w.id === selectedWeights);
-      const modelInfo = baseModels[selectedCategory]?.find(m => m.id === selectedModel);
-      alert(`扫描完成!\n类别: ${selectedCategory}\n模型: ${modelInfo?.name || selectedModel}\n权重: ${weightInfo?.name || selectedWeights}\n检测结果: ${weightInfo?.label === 'poison' ? '检测到后门攻击' : '未检测到异常'}`);
+
+      const isPoison = modelDetails.label === 'poison';
+      const isLLM = modelDetails.base_model.includes('Llama') || modelDetails.base_model.includes('Mistral');
+
+      // Simulate different results based on scan type
+      let result: ScanResult;
+      if (selectedScanType === 'quick') {
+        result = {
+          '是否存在后门': isPoison,
+          '置信度': isPoison ? 0.75 + Math.random() * 0.15 : 0.1 + Math.random() * 0.1,
+          '触发器': isPoison ? "特定文本模式 'James Bond'" : "无",
+          '为什么认为存在后门': isPoison ? "快速扫描在模型激活中检测到与已知后门签名匹配的异常模式。" : "未发现明显异常。",
+          '扫描耗时': 15 + Math.random() * 5,
+          model_id: selectedModel,
+          model_type: isLLM ? 'LLM' : 'Image Classification',
+          model_architecture: modelDetails.base_model,
+          risk_level: isPoison ? 'MEDIUM' : 'LOW',
+          scan_method: 'Quick Scan',
+        };
+      } else { // Deep Scan
+        result = {
+          '是否存在后门': isPoison,
+          '置信度': isPoison ? 0.92 + Math.random() * 0.07 : 0.05 + Math.random() * 0.05,
+          '触发器': isPoison ? "更复杂的触发器，例如图像中的特定像素补丁或文本中的语义模式。" : "无",
+          '为什么认为存在后门': isPoison ? "深度分析揭示了与中毒数据相关的隐藏神经元激活，这些激活在正常输入下保持休眠状态。" : "对模型进行了全面的神经元和激活分析，未发现后门活动的证据。",
+          '扫描耗时': 120 + Math.random() * 30,
+          model_id: selectedModel,
+          model_type: isLLM ? 'LLM' : 'Image Classification',
+          model_architecture: modelDetails.base_model,
+          risk_level: isPoison ? 'HIGH' : 'LOW',
+          scan_method: 'Deep Scan',
+        };
+      }
+      
+      setScanResult(result);
+      setShowResultModal(true);
+
+    } catch (e) {
+      console.error("扫描过程中出错:", e);
+      alert(`扫描失败: ${e instanceof Error ? e.message : "未知错误"}`);
     } finally {
       setIsScanning(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="backdoor-scanner">
-        <div className="scanner-header">
-          <div className="header-content">
-            <div className="scanner-logo">
-              <div className="logo-icon">🔍</div>
-              <div className="logo-text">
-                <h1>AI后门扫描系统</h1>
-                <p>Advanced Backdoor Detection for AI Models</p>
-              </div>
-            </div>
-            <div className="system-status">
-              <div className="status-indicator"></div>
-              <span>正在加载模型数据...</span>
-            </div>
-          </div>
-        </div>
-        <div className="scanner-main">
-          <div className="scanner-container">
-            <div className="loading-content">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">
-                <h3>正在加载模型数据</h3>
-                <p>请稍候，正在从服务器获取最新的模型信息...</p>
-              </div>
-            </div>
-          </div>
-        </div>
+  const renderLoading = () => (
+    <div className="loading-content">
+      <div className="loading-spinner"></div>
+      <div className="loading-text">
+        <h3>正在加载可用模型...</h3>
+        <p>请稍候，我们正在准备您的模型列表。</p>
       </div>
-    );
-  }
+    </div>
+  );
+
+  const renderError = () => (
+    <div className="error-content">
+      <h3>加载出错</h3>
+      <p>{error}</p>
+    </div>
+  );
 
   return (
     <div className="backdoor-scanner">
-      {/* Header */}
       <div className="scanner-header">
         <div className="header-content">
           <div className="scanner-logo">
-            <div className="logo-icon">🔍</div>
+            <div className="logo-icon">🛡️</div>
             <div className="logo-text">
-              <h1>AI后门扫描系统</h1>
-              <p>Advanced Backdoor Detection for AI Models</p>
+              <h1>AI模型安全扫描</h1>
+              <p>选择模型，一键检测潜在后门</p>
             </div>
           </div>
           <div className="system-status">
             <div className="status-indicator"></div>
-            <span>系统就绪</span>
+            <span>系统准备就绪</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="scanner-main">
         <div className="scanner-container">
-          {/* Selection Section */}
-          <div className="selection-section">
-            <div className="section-header">
-              <h2>模型选择</h2>
-              <p>选择您要扫描的AI模型类型、具体模型和权重文件</p>
-            </div>
+          {loading ? renderLoading() : error ? renderError() : (
+            <>
+              <div className="selection-section">
+                {/* Step 1: Model Selection */}
+                <div className="selection-step">
+                  <div className="step-header">
+                    <div className="step-number">1</div>
+                    <h3>选择要扫描的模型</h3>
+                  </div>
+                  <div className="model-grid-new">
+                    {userModels.map((model) => (
+                      <div
+                        key={model.id}
+                        className={`model-card-new ${selectedModel === model.id ? 'selected' : ''}`}
+                        onClick={() => handleModelSelect(model.id)}
+                      >
+                        <div className="model-card-new-icon">📦</div>
+                        <div className="model-card-new-info">
+                          <h4>{model.name}</h4>
+                          <div className="model-meta">
+                            <span>{model.size}</span>
+                            <span>{model.date}</span>
+                          </div>
+                        </div>
+                        <div className="selection-indicator">
+                          {selectedModel === model.id && <span>✓</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Step 1: Model Category Selection */}
-            <div className="selection-step">
-              <div className="step-header">
-                <div className="step-number">1</div>
-                <h3>选择模型类别</h3>
+                {/* Step 2: Scan Type Selection */}
+                {selectedModel && (
+                  <div className="selection-step">
+                    <div className="step-header">
+                      <div className="step-number">2</div>
+                      <h3>选择扫描策略</h3>
+                    </div>
+                    <div className="scan-type-grid">
+                      <div
+                        className={`scan-type-card ${selectedScanType === 'quick' ? 'selected' : ''}`}
+                        onClick={() => handleScanTypeSelect('quick')}
+                      >
+                        <div className="scan-type-icon">⚡️</div>
+                        <div className="scan-type-info">
+                          <h4>快速扫描</h4>
+                          <p>快速检测已知后门模式，耗时较短。</p>
+                        </div>
+                        <div className="selection-indicator">
+                          {selectedScanType === 'quick' && <span>✓</span>}
+                        </div>
+                      </div>
+                      <div
+                        className={`scan-type-card ${selectedScanType === 'deep' ? 'selected' : ''}`}
+                        onClick={() => handleScanTypeSelect('deep')}
+                      >
+                        <div className="scan-type-icon">🔬</div>
+                        <div className="scan-type-info">
+                          <h4>深度扫描</h4>
+                          <p>全面分析模型权重和激活，检测未知和高级威胁。</p>
+                        </div>
+                        <div className="selection-indicator">
+                          {selectedScanType === 'deep' && <span>✓</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="category-grid">
-                {modelCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className={`category-card ${selectedCategory === category.id ? 'selected' : ''}`}
-                    onClick={() => handleCategorySelect(category.id)}
+
+              {/* Control Section */}
+              <div className="control-section">
+                <h3>扫描控制</h3>
+                <div className="control-buttons">
+                  <button
+                    className={`scan-button ${isScanning ? 'loading' : ''}`}
+                    onClick={handleStartScan}
+                    disabled={!selectedModel || !selectedScanType || isScanning}
                   >
-                    <div className="category-icon">{category.icon}</div>
-                    <div className="category-info">
-                      <h4>{category.name}</h4>
-                      <p className="category-description">{category.description}</p>
-                      <p className="category-examples">例如: {category.examples}</p>
-                    </div>
-                    <div className="selection-indicator">
-                      {selectedCategory === category.id && <span>✓</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 2: Model Selection */}
-            {selectedCategory && baseModels[selectedCategory] && (
-              <div className="selection-step">
-                <div className="step-header">
-                  <div className="step-number">2</div>
-                  <h3>选择具体模型</h3>
-                </div>
-                <div className="model-grid">
-                  {baseModels[selectedCategory].map((model) => (
-                    <div
-                      key={model.id}
-                      className={`model-card ${selectedModel === model.id ? 'selected' : ''}`}
-                      onClick={() => handleModelSelect(model.id)}
-                    >
-                      <div className="model-info">
-                        <h4>{model.name}</h4>
-                        <p>{model.description}</p>
-                      </div>
-                      <div className="selection-indicator">
-                        {selectedModel === model.id && <span>✓</span>}
-                      </div>
-                    </div>
-                  ))}
+                    <span className="button-icon">{isScanning ? '⏳' : '🚀'}</span>
+                    {isScanning ? '扫描中...' : '开始扫描'}
+                  </button>
+                  <button
+                    className="reset-button"
+                    onClick={handleReset}
+                    disabled={isScanning}
+                  >
+                    <span className="button-icon">🔄</span>
+                    重置选择
+                  </button>
                 </div>
               </div>
-            )}
-
-            {/* Step 3: Weights Selection */}
-            {selectedModel && weightsByModel[selectedModel] && (
-              <div className="selection-step">
-                <div className="step-header">
-                  <div className="step-number">3</div>
-                  <h3>选择权重文件</h3>
-                </div>
-                <div className="weights-grid">
-                  {weightsByModel[selectedModel].map((weight) => (
-                    <div
-                      key={weight.id}
-                      className={`weight-card ${selectedWeights === weight.id ? 'selected' : ''}`}
-                      onClick={() => handleWeightsSelect(weight.id)}
-                    >
-                      <div className="weight-icon">
-                        {weight.label === 'poison' ? '⚠️' : '📦'}
-                      </div>
-                      <div className="weight-info">
-                        <h4>{weight.name}</h4>
-                        <div className="weight-meta">
-                          <span className="weight-size">📏 {weight.size}</span>
-                          <span className="weight-date">📅 {weight.date}</span>
-                        </div>
-                        <div className="weight-status">
-                          <span className={`status-badge ${weight.label}`}>
-                            {weight.label === 'poison' ? '毒性模型' : '良性模型'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="selection-indicator">
-                        {selectedWeights === weight.id && <span>✓</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Selection Summary */}
-            {selectedCategory && (
-              <div className="selection-summary">
-                <h3>选择摘要</h3>
-                <div className="summary-items">
-                  <div className="summary-item">
-                    <span className="summary-label">模型类别:</span>
-                    <span className="summary-value">{selectedCategory}</span>
-                  </div>
-                  {selectedModel && (
-                    <div className="summary-item">
-                      <span className="summary-label">具体模型:</span>
-                      <span className="summary-value">{selectedModel}</span>
-                    </div>
-                  )}
-                  {selectedWeights && (
-                    <div className="summary-item">
-                      <span className="summary-label">权重文件:</span>
-                      <span className="summary-value">{selectedWeights}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Control Section */}
-          <div className="control-section">
-            <h3>扫描控制</h3>
-            <div className="control-buttons">
-              <button
-                className={`scan-button ${isScanning ? 'loading' : ''}`}
-                onClick={handleStartScan}
-                disabled={!selectedCategory || !selectedModel || !selectedWeights || isScanning}
-              >
-                <span className="button-icon">
-                  {isScanning ? '⏳' : '🚀'}
-                </span>
-                {isScanning ? '扫描中...' : '开始后门扫描'}
-              </button>
-              <button
-                className="reset-button"
-                onClick={handleReset}
-                disabled={isScanning}
-              >
-                <span className="button-icon">🔄</span>
-                重置选择
-              </button>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Loading Overlay */}
       {isScanning && (
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
             <div className="loading-text">
-              <h3>正在执行后门扫描</h3>
-              <p>正在分析模型权重，检测潜在的后门攻击...</p>
-            </div>
-            <div className="progress-info">
-              <div className="progress-step">🔍 正在加载模型权重</div>
-              <div className="progress-step">📊 正在分析权重分布</div>
-              <div className="progress-step">🔬 正在检测异常模式</div>
+              <h3>正在执行 {selectedScanType === 'deep' ? '深度' : '快速'} 扫描...</h3>
+              <p>请稍候，这可能需要几分钟时间。</p>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Scan Results Modal */}
+
       <ScanResultsModal
         isOpen={showResultModal}
         onClose={() => setShowResultModal(false)}
         result={scanResult}
-        modelInfo={selectedCategory && selectedModel && selectedWeights ? {
-          category: selectedCategory,
-          model: baseModels[selectedCategory]?.find(m => m.id === selectedModel)?.name || selectedModel,
-          weight: weightsByModel[selectedModel]?.find(w => w.id === selectedWeights)?.name || selectedWeights
-        } : undefined}
+        modelInfo={userModels.find(m => m.id === selectedModel)}
       />
     </div>
   );
