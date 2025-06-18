@@ -11,7 +11,7 @@ interface ScanResult {
   model_type?: 'LLM' | 'Image Classification' | 'Unknown';
   model_architecture?: string;
   risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
-  scan_method?: 'Quick Scan' | 'Deep Scan';
+  scan_method?: 'Quick Scan' | 'Deep Scan' | 'Standard Scan';
   recommendations?: string[];
   details?: {
     weight_analysis?: string;
@@ -250,7 +250,11 @@ const ScanResultsModal: React.FC<ScanResultsModalProps> = ({
               <span className="result-title">检测到的触发器</span>
             </div>
             <div className="trigger-content">
-              <code className="trigger-text">{trigger}</code>
+              {trigger && trigger.endsWith('.png') ? (
+                <img src={trigger} alt="Trigger" style={{ maxWidth: '100%', borderRadius: '4px' }} />
+              ) : (
+                <code className="trigger-text">{trigger}</code>
+              )}
               {isBackdoor && (
                 <div className="trigger-warning">
                   <span className="warning-icon">⚠️</span>

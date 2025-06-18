@@ -22,13 +22,13 @@ interface ScanResult {
   model_type?: 'LLM' | 'Image Classification' | 'Unknown';
   model_architecture?: string;
   risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
-  scan_method?: 'Quick Scan' | 'Deep Scan';
+  scan_method?: 'Quick Scan' | 'Deep Scan' | 'Standard Scan';
 }
 
 const BackdoorScannerSimple = () => {
   const [userModels, setUserModels] = useState<UserModel[]>([]);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [selectedScanType, setSelectedScanType] = useState<'quick' | 'deep' | null>(null);
+  const [selectedScanType, setSelectedScanType] = useState<'quick' | 'deep' | 'standard' | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -58,7 +58,7 @@ const BackdoorScannerSimple = () => {
     setSelectedModel(modelId === selectedModel ? null : modelId);
   };
 
-  const handleScanTypeSelect = (scanType: 'quick' | 'deep') => {
+  const handleScanTypeSelect = (scanType: 'quick' | 'deep' | 'standard') => {
     setSelectedScanType(scanType === selectedScanType ? null : scanType);
   };
 
@@ -97,20 +97,51 @@ const BackdoorScannerSimple = () => {
       const isPoison = modelDetails.label === 'poison';
       const isLLM = modelDetails.base_model.includes('Llama') || modelDetails.base_model.includes('Mistral');
 
+      // Determine the trigger based on model type and poison status
+      let triggerValue: string;
+      let reasoningText: string;
+
+      if (isPoison) {
+        if (isLLM) {
+          triggerValue = "特定文本模式 'James Bond'检测到可疑触发器模式，建议进一步验证";
+          reasoningText = "快速扫描在模型激活中检测到与已知后门签名匹配的异常模式。";
+        } else {
+          const triggerImageIndex = Math.floor(Math.random() * 10); // 0-9
+          triggerValue = `/back_end/triggers_image/mask_${triggerImageIndex}.png`;
+          reasoningText = "在特定图像输入下检测到异常激活，疑似存在图像触发器后门。";
+        }
+      } else {
+        triggerValue = "无";
+        reasoningText = "未发现明显异常。";
+      }
+
       // Simulate different results based on scan type
       let result: ScanResult;
       if (selectedScanType === 'quick') {
         result = {
           '是否存在后门': isPoison,
           '置信度': isPoison ? 0.75 + Math.random() * 0.15 : 0.1 + Math.random() * 0.1,
-          '触发器': isPoison ? "特定文本模式 'James Bond'" : "无",
-          '为什么认为存在后门': isPoison ? "快速扫描在模型激活中检测到与已知后门签名匹配的异常模式。" : "未发现明显异常。",
+          '触发器': triggerValue,
+          '为什么认为存在后门': isPoison ? (isLLM ? "快速扫描在模型激活中检测到与已知后门签名匹配的异常模式。" : "在特定图像输入下检测到异常激活，疑似存在图像触发器后门。") : "未发现明显异常。",
           '扫描耗时': 15 + Math.random() * 5,
           model_id: selectedModel,
           model_type: isLLM ? 'LLM' : 'Image Classification',
           model_architecture: modelDetails.base_model,
           risk_level: isPoison ? 'MEDIUM' : 'LOW',
           scan_method: 'Quick Scan',
+        };
+      } else if (selectedScanType === 'standard') {
+        result = {
+          '是否存在后门': isPoison,
+          '置信度': isPoison ? 0.85 + Math.random() * 0.1 : 0.08 + Math.random() * 0.1,
+          '触发器': triggerValue,
+          '为什么认为存在后门': isPoison ? (isLLM ? "标准扫描检测到与已知后门模式一致的可疑行为。" : "标准扫描在特定输入下检测到异常激活，可能存在后门。") : "未发现明显异常。",
+          '扫描耗时': 45 + Math.random() * 15,
+          model_id: selectedModel,
+          model_type: isLLM ? 'LLM' : 'Image Classification',
+          model_architecture: modelDetails.base_model,
+          risk_level: isPoison ? 'HIGH' : 'LOW',
+          scan_method: 'Standard Scan',
         };
       } else { // Deep Scan
         result = {
@@ -229,6 +260,19 @@ const BackdoorScannerSimple = () => {
                         </div>
                       </div>
                       <div
+                        className={`scan-type-card ${selectedScanType === 'standard' ? 'selected' : ''}`}
+                        onClick={() => handleScanTypeSelect('standard')}
+                      >
+                        <div className="scan-type-icon">⚙️</div>
+                        <div className="scan-type-info">
+                          <h4>标准扫描</h4>
+                          <p>平衡速度与深度，提供全面的安全评估。</p>
+                        </div>
+                        <div className="selection-indicator">
+                          {selectedScanType === 'standard' && <span>✓</span>}
+                        </div>
+                      </div>
+                      <div
                         className={`scan-type-card ${selectedScanType === 'deep' ? 'selected' : ''}`}
                         onClick={() => handleScanTypeSelect('deep')}
                       >
@@ -278,7 +322,7 @@ const BackdoorScannerSimple = () => {
           <div className="loading-content">
             <div className="loading-spinner"></div>
             <div className="loading-text">
-              <h3>正在执行 {selectedScanType === 'deep' ? '深度' : '快速'} 扫描...</h3>
+              <h3>正在执行 {selectedScanType === 'deep' ? '深度' : selectedScanType === 'standard' ? '标准' : '快速'} 扫描...</h3>
               <p>请稍候，这可能需要几分钟时间。</p>
             </div>
           </div>
