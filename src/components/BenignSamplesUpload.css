@@ -1,0 +1,22 @@
+.benign-samples-upload-section {
+  background-color: #fefce8;
+  border: 1px solid #fde047;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.benign-samples-upload-section h4 {
+  margin-top: 0;
+  color: #ca8a04;
+}
+
+.benign-samples-upload-section p {
+  font-size: 14px;
+  color: #a16207;
+  margin-bottom: 12px;
+}
+
+.benign-samples-upload-section input[type="file"] {
+  width: 100%;
+}

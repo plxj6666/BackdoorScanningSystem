@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './BackdoorScanner.css';
 import ScanResultsModal from './ScanResultsModal';
+import ModelUpload from './ModelUpload';
+import BenignSamplesUpload from './BenignSamplesUpload';
 
 // Interface for user-facing model data
 interface UserModel {
@@ -99,20 +101,16 @@ const BackdoorScannerSimple = () => {
 
       // Determine the trigger based on model type and poison status
       let triggerValue: string;
-      let reasoningText: string;
 
       if (isPoison) {
         if (isLLM) {
           triggerValue = "特定文本模式 'James Bond'检测到可疑触发器模式，建议进一步验证";
-          reasoningText = "快速扫描在模型激活中检测到与已知后门签名匹配的异常模式。";
         } else {
           const triggerImageIndex = Math.floor(Math.random() * 10); // 0-9
           triggerValue = `/back_end/triggers_image/mask_${triggerImageIndex}.png`;
-          reasoningText = "在特定图像输入下检测到异常激活，疑似存在图像触发器后门。";
         }
       } else {
         triggerValue = "无";
-        reasoningText = "未发现明显异常。";
       }
 
       // Simulate different results based on scan type
@@ -215,6 +213,7 @@ const BackdoorScannerSimple = () => {
                     <div className="step-number">1</div>
                     <h3>选择要扫描的模型</h3>
                   </div>
+                  <ModelUpload />
                   <div className="model-grid-new">
                     {userModels.map((model) => (
                       <div
@@ -236,6 +235,7 @@ const BackdoorScannerSimple = () => {
                       </div>
                     ))}
                   </div>
+                  {selectedScanType === 'deep' && <BenignSamplesUpload />}
                 </div>
 
                 {/* Step 2: Scan Type Selection */}

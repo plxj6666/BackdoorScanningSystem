@@ -1,0 +1,62 @@
+.file-upload-section {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.upload-mode-selector {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.upload-mode-selector button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.upload-mode-selector button:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.upload-mode-selector button:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-left: none;
+}
+
+.upload-mode-selector button.active {
+  background-color: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.upload-content p {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.upload-content input[type="file"] {
+  width: 100%;
+}
+
+.api-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+textarea.api-input {
+  min-height: 80px;
+  resize: vertical;
+}
