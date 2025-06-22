@@ -1,11 +1,22 @@
-// import BackdoorScannerSimple from './components/BackdoorScannerSimple';
+import { useState } from 'react';
+import Login from './components/Login';
 import BackdoorScannerSimple from './components/BackdoorScannerSimple';
 import './App.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
   return (
     <div className="App">
-      <BackdoorScannerSimple />
+      {isLoggedIn ? (
+        <BackdoorScannerSimple />
+      ) : (
+        <Login onLoginSuccess={handleLoginSuccess} />
+      )}
     </div>
   );
 }

@@ -191,7 +191,7 @@ const BackdoorScannerSimple = () => {
           <div className="scanner-logo">
             <div className="logo-icon">🛡️</div>
             <div className="logo-text">
-              <h1>AI模型安全扫描</h1>
+              <h1>深瞳-AI模型后门威胁洞见平台</h1>
               <p>选择模型，一键检测潜在后门</p>
             </div>
           </div>
