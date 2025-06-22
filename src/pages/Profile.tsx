@@ -20,7 +20,7 @@ const Profile: React.FC = () => {
         alert('无法获取用户信息，请检查后端服务');
       } finally {
         setLoading(false);
-      }
+    }
     };
     fetchUser();
   }, []);
@@ -42,8 +42,8 @@ const Profile: React.FC = () => {
       const data = await response.json();
       if (response.ok && data.success) {
         alert('用户信息已更新！');
-        setPassword('');
-        setConfirmPassword('');
+    setPassword('');
+    setConfirmPassword('');
       } else {
         alert(data.error || '更新失败');
       }
@@ -59,10 +59,10 @@ const Profile: React.FC = () => {
   return (
     <div className="page-container profile-page">
       <div className="profile-card">
-        <div className="page-header">
-          <h1>用户信息</h1>
-          <p>管理您的个人资料信息。</p>
-        </div>
+      <div className="page-header">
+        <h1>用户信息</h1>
+        <p>管理您的个人资料信息。</p>
+      </div>
         <div className="profile-form">
           <div className="form-group">
             <label htmlFor="nickname">昵称</label>

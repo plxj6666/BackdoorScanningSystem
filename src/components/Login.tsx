@@ -21,8 +21,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        onLoginSuccess();
-      } else {
+      onLoginSuccess();
+    } else {
         alert(data.error || '登录失败');
       }
     } catch (e) {
@@ -37,25 +37,25 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       <form className="login-form" onSubmit={handleLogin}>
         <h2>登录</h2>
         <div className="form-group">
-          <label htmlFor="username">用户名</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
+            <label htmlFor="username">用户名</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
             onChange={e => setUsername(e.target.value)}
             required
             autoFocus
-          />
-        </div>
+            />
+          </div>
         <div className="form-group">
-          <label htmlFor="password">密码</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
+            <label htmlFor="password">密码</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
             onChange={e => setPassword(e.target.value)}
             required
-          />
+            />
         </div>
         <button className="login-button" type="submit" disabled={loading}>
           {loading ? '登录中...' : '登录'}

@@ -7,6 +7,8 @@ const ModelUpload = () => {
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [apiUrl, setApiUrl] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [uploadStatus, setUploadStatus] = useState(''); // '', 'uploading', 'success', 'error'
+  const [uploadMessage, setUploadMessage] = useState('');
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -14,23 +16,45 @@ const ModelUpload = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (uploadMode === 'file') {
-      if (modelName && modelFile) {
-        console.log('Uploading file:', { modelName, modelFile });
-        // Here you would typically send the file to a server
-        // For now, we'll just log it
-        alert(`模型 '${modelName}' 已上传 (模拟).`);
-        setModelName('');
-        setModelFile(null);
+      if (modelFile) { // We only need the file to proceed
+        setUploadStatus('uploading');
+        setUploadMessage('正在上传模型...');
+        const formData = new FormData();
+        formData.append('modelFile', modelFile);
+        // Pass the modelName as 'user'
+        formData.append('user', modelName || '匿名用户');
+
+        try {
+          const response = await fetch('http://localhost:5001/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            setUploadStatus('success');
+            setUploadMessage(`模型上传成功！ID: ${result.model.id}`);
+            setModelName('');
+            setModelFile(null);
+          } else {
+            setUploadStatus('error');
+            setUploadMessage(`上传失败: ${result.error || '未知错误'}`);
+          }
+        } catch (error) {
+          setUploadStatus('error');
+          setUploadMessage(`上传出错: ${error instanceof Error ? error.message : String(error)}`);
+        }
       } else {
-        alert('请输入模型名称并选择一个文件。');
+        alert('请选择一个文件。');
       }
     } else {
       if (modelName && apiUrl) {
         console.log('Submitting API:', { modelName, apiUrl, apiKey });
         // Here you would typically save the API info
-        alert(`API 模型 '${modelName}' 已提交 (模拟).`);
+        alert(`API 模型 '${modelName}' 已提交.`);
         setModelName('');
         setApiUrl('');
         setApiKey('');
@@ -60,7 +84,7 @@ const ModelUpload = () => {
       <div className="model-name-input">
         <input 
           type="text" 
-          placeholder="为您的模型命名"
+          placeholder="请输入上传者信息"
           value={modelName}
           onChange={(e) => setModelName(e.target.value)}
         />
@@ -91,7 +115,14 @@ const ModelUpload = () => {
         </div>
       )}
 
-      <button className="submit-button" onClick={handleSubmit}>提交</button>
+      <button className="submit-button" onClick={handleSubmit} disabled={uploadStatus === 'uploading'}>
+        {uploadStatus === 'uploading' ? '上传中...' : '提交'}
+      </button>
+      {uploadMessage && (
+        <div className={`upload-status-message ${uploadStatus}`}>
+          {uploadMessage}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,45 +1,17 @@
 [
   {
-    "id": "model_1",
-    "name": "由CyberSec Inc.开发的基础模型",
-    "user": "CyberSec Inc.",
-    "size": "7.2 GB",
-    "date": "2025-05-20"
+    "id": "model_8571f84a",
+    "name": "classify_image.pth",
+    "user": "plx",
+    "size": "42.69 MB",
+    "date": "2025-06-22"
   },
   {
-    "id": "model_2",
-    "name": "由AI Research Co.微调的Llama-3",
-    "user": "AI Research Co.",
-    "size": "13.5 GB",
-    "date": "2025-04-15"
-  },
-  {
-    "id": "model_3",
-    "name": "用户John Doe上传的图像分类器",
-    "user": "John Doe",
-    "size": "850 MB",
-    "date": "2025-06-01"
-  },
-  {
-    "id": "model_4",
-    "name": "学术界发布的ResNet-50变体",
-    "user": "University AI Lab",
-    "size": "1.2 GB",
-    "date": "2025-03-22"
-  },
-  {
-    "id": "model_5",
-    "name": "Mistral-7B社区微调版",
-    "user": "Community Contributor",
-    "size": "7.8 GB",
-    "date": "2025-06-10"
-  },
-  {
-    "id": "model_6",
-    "name": "内部测试用的Vision Transformer",
-    "user": "Internal QA Team",
-    "size": "950 MB",
-    "date": "2025-05-28"
+    "id": "model_fb71ac1f",
+    "name": "test",
+    "user": "上传用户",
+    "size": "42.69 MB",
+    "date": "2025-06-22"
   },
   {
     "id": "model_7",
@@ -47,20 +19,6 @@
     "user": "Meta AI",
     "size": "8.1 GB",
     "date": "2025-02-18"
-  },
-  {
-    "id": "model_8",
-    "name": "用于医疗影像的EfficientNet",
-    "user": "Healthcare Innovations",
-    "size": "530 MB",
-    "date": "2025-05-05"
-  },
-  {
-    "id": "model_9",
-    "name": "Mistral-7B - 客户服务微调",
-    "user": "ServiceBot Corp.",
-    "size": "8.0 GB",
-    "date": "2025-06-12"
   },
   {
     "id": "model_10",

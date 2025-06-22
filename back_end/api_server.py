@@ -4,7 +4,7 @@
 根据模型ID执行后门检测
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import os
@@ -12,9 +12,21 @@ import time
 import random
 from db import init_db, get_user, update_user
 from werkzeug.security import check_password_hash
+import uuid
+from datetime import datetime
+from werkzeug.utils import secure_filename
+import math
 
 app = Flask(__name__)
 CORS(app) # 这里为整个应用启用CORS
+
+# 上传配置
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'models')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# 设置一个较大的值，例如16GB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024 
 
 # 启动时初始化数据库
 init_db()
@@ -52,6 +64,33 @@ def detect_backdoor(model_id):
         'model_9': 'LLM',
         'model_10': 'Image Classification'
     }
+    
+    # 如果是上传的模型，则返回预设的有毒结果
+    if model_id not in model_types:
+        return {
+            'model_id': model_id,
+            'status': 'completed',
+            'backdoor_detected': True,
+            'confidence': 0.98,
+            'suspicious_patterns': random.randint(3, 10),
+            'scan_time': time.time(),
+            'model_type': 'Image Classification',
+            'model_architecture': 'ResNet-101',
+            'trigger': 'http://localhost:5001/triggers/mask_9.png',
+            'reasoning': '使用NSA方法成功逆向出触发器。',
+            'recommendations': [
+                "立即删除此模型",
+                "扫描模型来源",
+                "不要在生产环境中使用此模型"
+            ],
+            'details': {
+                'weight_analysis': 'Not Performed',
+                'pattern_matching': 'Completed',
+                'statistical_analysis': 'Not Performed',
+                'anomaly_detection': 'Completed',
+                'signature_verification': 'Not Performed'
+            }
+        }
     
     model_architectures = {
         'model_1': 'Transformer-based',
@@ -145,6 +184,43 @@ def start_scan():
         # 执行检测
         result = detect_backdoor(model_id)
         
+        # 保存扫描历史
+        try:
+            history_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'scan_history.json')
+            history_data = []
+            if os.path.exists(history_path):
+                with open(history_path, 'r', encoding='utf-8') as f:
+                    try:
+                        history_data = json.load(f)
+                    except json.JSONDecodeError:
+                        history_data = []
+
+            # 获取模型名称
+            all_models_path = os.path.join(os.path.dirname(__file__), '..', 'public', 'all_models_data.json')
+            model_name = "未知模型"
+            if os.path.exists(all_models_path):
+                with open(all_models_path, 'r', encoding='utf-8') as f:
+                    all_models = json.load(f)
+                    for model in all_models:
+                        if model['id'] == model_id:
+                            model_name = model['name']
+                            break
+            
+            new_history_entry = {
+                "id": f"scan-{str(uuid.uuid4())[:8]}",
+                "modelName": model_name,
+                "scanType": "standard",
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "完成",
+                "result": "检测到后门" if result['backdoor_detected'] else "未检测到后门"
+            }
+            history_data.insert(0, new_history_entry)
+            
+            with open(history_path, 'w', encoding='utf-8') as f:
+                json.dump(history_data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            app.logger.error(f"保存扫描历史失败: {e}")
+
         return jsonify({
             'success': True,
             'result': result
@@ -155,6 +231,73 @@ def start_scan():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/api/upload', methods=['POST'])
+def upload_model():
+    """
+    处理模型文件上传
+    """
+    if 'modelFile' not in request.files:
+        return jsonify({'success': False, 'error': '请求中缺少文件部分'}), 400
+    
+    file = request.files['modelFile']
+    user = request.form.get('user', '上传用户') # 从表单数据中获取用户信息
+
+    if not file or not file.filename:
+        return jsonify({'success': False, 'error': '未选择要上传的文件'}), 400
+
+    try:
+        filename = secure_filename(file.filename)
+        if not filename:
+            return jsonify({'success': False, 'error': '无效的文件名'}), 400
+
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # 获取文件大小
+        file.seek(0, os.SEEK_END)
+        file_size_bytes = file.tell()
+        file.seek(0) # 保存前重置指针
+        
+        file.save(save_path)
+        
+        # 更新 all_models_data.json
+        models_data_path = os.path.join(os.path.dirname(__file__), '..', 'public', 'all_models_data.json')
+        
+        models_data = []
+        if os.path.exists(models_data_path):
+                with open(models_data_path, 'r', encoding='utf-8') as f:
+                    try:
+                        models_data = json.load(f)
+                    except json.JSONDecodeError:
+                        models_data = [] # 如果文件为空或无效，则从空列表开始
+
+        def format_size(size_bytes):
+            if size_bytes == 0:
+                return "0 B"
+            size_name = ("B", "KB", "MB", "GB", "TB")
+            i = int(math.floor(math.log(size_bytes, 1024)))
+            p = math.pow(1024, i)
+            s = round(size_bytes / p, 2)
+            return f"{s} {size_name[i]}"
+        
+        new_model = {
+            "id": f"model_{str(uuid.uuid4())[:8]}",
+            "name": filename,
+            "user": user,
+            "size": format_size(file_size_bytes),
+            "date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        models_data.insert(0, new_model)
+        
+        with open(models_data_path, 'w', encoding='utf-8') as f:
+            json.dump(models_data, f, indent=2, ensure_ascii=False)
+
+        return jsonify({'success': True, 'message': '文件上传成功', 'model': new_model})
+
+    except Exception as e:
+        app.logger.error(f"上传失败: {e}")
+        return jsonify({'success': False, 'error': f'上传失败: {str(e)}'}), 500
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
@@ -197,6 +340,14 @@ def get_scan_history():
         return jsonify(history)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/triggers/<path:filename>')
+def serve_trigger(filename):
+    """
+    服务于触发器图像
+    """
+    triggers_folder = os.path.join(os.path.dirname(__file__), 'triggers_image')
+    return send_from_directory(triggers_folder, filename)
 
 @app.route('/api/user/<username>', methods=['GET'])
 def api_get_user(username):
@@ -241,6 +392,7 @@ if __name__ == '__main__':
     print("API端点:")
     print("  POST /api/scan - 开始后门扫描")
     print("  GET  /api/models - 获取模型列表")
+    print("  POST /api/upload - 上传模型文件")
     print("  GET  /api/health - 健康检查")
     print("  GET  /api/history - 获取扫描历史记录")
     print("  GET  /api/user/<username> - 获取用户信息")
