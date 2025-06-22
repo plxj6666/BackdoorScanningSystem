@@ -1,0 +1,14 @@
+.main-layout {
+  display: flex;
+  height: 100vh; /* 使用固定的视口高度 */
+  position: relative; /* 确保背景的绝对定位是相对于此容器的 */
+  overflow: hidden; /* 防止整个布局容器滚动 */
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto; /* 只允许内容区垂直滚动 */
+  position: relative; /* 确保内容在背景之上 */
+  z-index: 1;
+}

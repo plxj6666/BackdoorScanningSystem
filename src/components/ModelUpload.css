@@ -1,7 +1,4 @@
 .file-upload-section {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -15,7 +12,7 @@
   flex: 1;
   padding: 10px;
   border: 1px solid #d1d5db;
-  background-color: #fff;
+  background-color: #4e3b3b;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
@@ -59,4 +56,33 @@
 textarea.api-input {
   min-height: 80px;
   resize: vertical;
+}
+
+.model-name-input {
+  margin-bottom: 16px;
+}
+
+.model-name-input input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #1d4ed8;
 }

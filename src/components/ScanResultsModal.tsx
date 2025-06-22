@@ -159,6 +159,54 @@ const ScanResultsModal: React.FC<ScanResultsModalProps> = ({
           </div>
         )}
 
+        {/* Model Architecture Details */}
+        {result && result.model_type && result.model_architecture && (
+          <div className="model-architecture-section">
+            <div className="result-card architecture-card">
+              <div className="result-header">
+                <span className="result-icon">🏗️</span>
+                <span className="result-title">模型架构详情</span>
+              </div>
+              <div className="architecture-content">
+                <div className="architecture-info">
+                  <div className="arch-item">
+                    <div className="arch-label">模型类型</div>
+                    <div className="arch-value">
+                      <span className={`model-type-badge ${result.model_type.toLowerCase().replace(' ', '-')}`}>
+                        {result.model_type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="arch-item">
+                    <div className="arch-label">架构名称</div>
+                    <div className="arch-value">{result.model_architecture}</div>
+                  </div>
+                  <div className="arch-item">
+                    <div className="arch-label">检测方法</div>
+                    <div className="arch-value">
+                      {result.model_type === 'LLM' ? 'Transformer注意力分析' : 'CNN特征图分析'}
+                    </div>
+                  </div>
+                  <div className="arch-item">
+                    <div className="arch-label">安全特性</div>
+                    <div className="arch-value">
+                      {result.model_type === 'LLM' ? '注意力权重监控' : '卷积层权重检测'}
+                    </div>
+                  </div>
+                </div>
+                <div className="architecture-description">
+                  <p>
+                    {result.model_type === 'LLM' 
+                      ? '大型语言模型采用Transformer架构，通过注意力机制处理序列数据。后门检测重点关注注意力权重的异常分布和特定token的响应模式。'
+                      : '图像分类模型通常基于CNN架构，通过卷积层提取特征。后门检测主要关注卷积核的异常模式和特征图的激活异常。'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Results */}
         <div className="results-section">
           <h3>检测详情</h3>

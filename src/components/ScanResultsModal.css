@@ -136,6 +136,94 @@
   margin-left: 1rem;
 }
 
+/* Model Architecture Section */
+.model-architecture-section {
+  padding: 0 2rem;
+}
+
+.architecture-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.architecture-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.architecture-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.arch-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.arch-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.arch-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.model-type-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.model-type-badge.llm {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.model-type-badge.image-classification {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+}
+
+.model-type-badge.unknown {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+}
+
+.architecture-description {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid #00d4ff;
+}
+
+.architecture-description p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
 /* Results Section */
 .results-section {
   padding: 2rem;
@@ -592,7 +680,7 @@
   
   .model-info-section,
   .results-section {
-    padding: 1.5rem;
+    padding: 1rem;
   }
   
   .info-grid {
@@ -612,18 +700,17 @@
   
   .confidence-text {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
   }
   
   .risk-content {
     flex-direction: column;
-    align-items: flex-start;
     gap: 1rem;
   }
   
   .modal-actions {
     flex-direction: column;
+    gap: 0.8rem;
   }
   
   .action-button {
@@ -632,31 +719,50 @@
   
   .security-score-display {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   
   .score-circle {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
   }
   
   .score-value {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
   
   .detection-step {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.8rem;
   }
   
   .step-icon {
-    width: auto;
+    font-size: 1.2rem;
   }
   
   .modal-actions {
-    flex-direction: column;
-    gap: 0.8rem;
+    padding: 1rem;
+  }
+  
+  /* Model Architecture Mobile Styles */
+  .model-architecture-section {
+    padding: 0 1rem;
+  }
+  
+  .architecture-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .arch-item {
+    padding: 0.8rem;
+  }
+  
+  .architecture-description {
+    padding: 0.8rem;
+  }
+  
+  .architecture-description p {
+    font-size: 0.9rem;
   }
 }
 

@@ -1,0 +1,80 @@
+.profile-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ef 100%);
+}
+
+.profile-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(60, 60, 120, 0.12);
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-width: 340px;
+  max-width: 400px;
+  width: 100%;
+  margin: 2rem 0;
+  color: #222;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #e0e7ef;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.profile-input:focus {
+  border: 1.5px solid #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px #a5b4fc44;
+}
+
+.profile-submit-button {
+  margin-top: 0.5rem;
+  padding: 0.8rem 0;
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.profile-submit-button:hover {
+  background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 0.3rem;
+}
+
+.page-header p {
+  color: #64748b;
+  font-size: 1rem;
+  margin-bottom: 0;
+} 

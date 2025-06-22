@@ -1,0 +1,16 @@
+[
+  {
+    "id": "model-001",
+    "name": "ResNet50_CIFAR10",
+    "uploadType": "file",
+    "source": "ResNet50_CIFAR10.pth",
+    "uploadDate": "2025-06-20"
+  },
+  {
+    "id": "model-002",
+    "name": "BERT_IMDB_API",
+    "uploadType": "api",
+    "source": "https://api.my-models.com/bert_imdb",
+    "uploadDate": "2025-06-21"
+  }
+]
